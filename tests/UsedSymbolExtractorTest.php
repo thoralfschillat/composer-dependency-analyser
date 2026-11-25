@@ -220,7 +220,8 @@ class UsedSymbolExtractorTest extends TestCase
                 SymbolKind::CLASSLIKE => [
                     // Line 15: after "public const NAMESPACE = ..." (T_CONST case)
                     // Line 27: after "ConstClass::NAMESPACE" (T_DOUBLE_COLON case)
-                    'Carbon\Carbon' => [15, 27],
+                    // Line 39: after "ConstClass::NAMESPACE {" (T_DOUBLE_COLON case, property hook follows)
+                    'Carbon\Carbon' => [15, 27, 39],
                 ],
             ],
         ];
@@ -233,6 +234,56 @@ class UsedSymbolExtractorTest extends TestCase
                     // Line 16: after "public const TRAIT = ..." (T_CONST case)
                     // Line 37: after "Other::CLASS" and closure (T_DOUBLE_COLON case)
                     'Carbon\Carbon' => [16, 37],
+                ],
+            ],
+        ];
+
+        yield 'namespace keyword as identifier' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/namespace-keyword-identifier.php',
+            [
+                SymbolKind::CLASSLIKE => [
+                    'Vendor\NamedArgument' => [12],
+                    'Vendor\AttributeArgument' => [20],
+                    'Vendor\MethodName' => [30],
+                    'Vendor\MethodReturningReference' => [40],
+                    'Vendor\TypedConstant' => [50],
+                    'Vendor\ConstantList' => [60],
+                    'Vendor\EnumCase' => [70],
+                    'Vendor\BackedEnumCase' => [80],
+                    'Vendor\TraitAliasSource' => [92],
+                    'Vendor\TraitAliasTarget' => [104],
+                    'Vendor\TraitAliasTargetWithVisibility' => [116],
+                ],
+            ],
+        ];
+
+        yield 'namespace keyword at end of file' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/namespace-at-end-of-file.php',
+            [
+                SymbolKind::CLASSLIKE => [
+                    'Vendor\UsedBeforeEndOfFile' => [7],
+                ],
+            ],
+        ];
+
+        yield 'multiple namespaces' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/multiple-namespaces.php',
+            [
+                SymbolKind::CLASSLIKE => [
+                    'Vendor\BeforeSimpleName' => [7],
+                    'Vendor\BeforeQualifiedName' => [15],
+                    'Vendor\BeforeKeywordName' => [23],
+                    'Vendor\BeforeCloseTag' => [31],
+                ],
+            ],
+        ];
+
+        yield 'multiple bracket namespaces' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/multiple-bracket-namespaces.php',
+            [
+                SymbolKind::CLASSLIKE => [
+                    'Vendor\BeforeNamedBlock' => [6],
+                    'Vendor\BeforeGlobalBlock' => [14],
                 ],
             ],
         ];

@@ -14,6 +14,7 @@ use function substr;
 use const T_AS;
 use const T_ATTRIBUTE;
 use const T_CLASS;
+use const T_CLOSE_TAG;
 use const T_COMMENT;
 use const T_CONST;
 use const T_CURLY_OPEN;
@@ -112,7 +113,7 @@ class UsedSymbolExtractor
                     break;
 
                 case T_NAMESPACE:
-                    if (!$this->isKeywordUsedAsConstantName()) {
+                    if ($this->isNamespaceDeclaration()) {
                         $inGlobalScope = false;
                         $useStatements = [];
                         $useStatementKinds = [];
@@ -378,6 +379,23 @@ class UsedSymbolExtractor
             || $tokenBefore->id === T_CONST;
     }
 
+    /**
+     * Checks if the current T_NAMESPACE token starts a namespace declaration.
+     * E.g., namespace Foo; or namespace Foo { or namespace {
+     * The lexer emits T_NAMESPACE for identifiers too, e.g., foo(namespace: $x) or function namespace()
+     */
+    private function isNamespaceDeclaration(): bool
+    {
+        if ($this->isKeywordUsedAsConstantName()) {
+            return false;
+        }
+
+        $pointerAfter = $this->getPointerAfter($this->pointer);
+
+        return $this->tokens[$pointerAfter]->text === '{'
+            || $this->getTokenAfter($pointerAfter + 1)->is([';', '{', T_CLOSE_TAG]);
+    }
+
     private function getTokenBefore(int $pointer): PhpToken
     {
         while ($pointer >= 0) {
@@ -396,18 +414,20 @@ class UsedSymbolExtractor
 
     private function getTokenAfter(int $pointer): PhpToken
     {
-        while ($pointer < $this->numTokens) {
-            $token = $this->tokens[$pointer];
+        return $this->tokens[$this->getPointerAfter($pointer)];
+    }
 
-            if ($token->isIgnorable()) {
-                $pointer++;
-                continue;
+    private function getPointerAfter(int $pointer): int
+    {
+        while ($pointer < $this->numTokens) {
+            if (!$this->tokens[$pointer]->isIgnorable()) {
+                return $pointer;
             }
 
-            return $token;
+            $pointer++;
         }
 
-        return $this->tokens[$this->numTokens - 1];
+        return $this->numTokens - 1;
     }
 
 }

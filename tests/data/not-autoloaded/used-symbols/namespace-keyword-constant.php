@@ -27,3 +27,15 @@ class IssueHere
         Carbon::now();
     }
 }
+
+class HookedProperty
+{
+    // T_NAMESPACE after T_DOUBLE_COLON, followed by a property hook - should not reset use statements
+    public string $namespace = ConstClass::NAMESPACE { get => $this->namespace; }
+
+    public function test(): void
+    {
+        // Carbon should still be detected here (after ::NAMESPACE and the hook's opening brace)
+        Carbon::now();
+    }
+}
