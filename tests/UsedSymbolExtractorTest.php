@@ -238,6 +238,30 @@ class UsedSymbolExtractorTest extends TestCase
             ],
         ];
 
+        yield 'class keyword as identifier' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/class-keyword-identifier.php',
+            [
+                SymbolKind::CLASSLIKE => [
+                    'Vendor\NamedArgument' => [13],
+                    'Vendor\AttributeArgument' => [24],
+                    'Vendor\MethodName' => [34],
+                    'Vendor\MethodReturningReference' => [44],
+                    'Vendor\TypedConstant' => [54],
+                    'Vendor\ConstantList' => [64],
+                    'Vendor\EnumCase' => [74],
+                    'Vendor\BackedEnumCase' => [84],
+                    'Vendor\TraitAliasSource' => [96],
+                    'Vendor\TraitAliasTarget' => [108],
+                    'Vendor\EnumTraitAliasSource' => [120],
+                ],
+            ],
+        ];
+
+        yield 'anonymous class' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/anonymous-class.php',
+            [],
+        ];
+
         yield 'namespace keyword as identifier' => [
             __DIR__ . '/data/not-autoloaded/used-symbols/namespace-keyword-identifier.php',
             [

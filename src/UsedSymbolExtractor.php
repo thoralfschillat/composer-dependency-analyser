@@ -33,6 +33,7 @@ use const T_NS_SEPARATOR;
 use const T_NULLSAFE_OBJECT_OPERATOR;
 use const T_OBJECT_OPERATOR;
 use const T_OPEN_TAG;
+use const T_READONLY;
 use const T_STRING;
 use const T_TRAIT;
 use const T_USE;
@@ -92,7 +93,7 @@ class UsedSymbolExtractor
                 case T_INTERFACE:
                 case T_TRAIT:
                 case T_ENUM:
-                    if (!$this->isKeywordUsedAsConstantName()) {
+                    if ($this->isClassLikeDeclaration()) {
                         $inClassLevel = $level + 1;
                     }
 
@@ -377,6 +378,17 @@ class UsedSymbolExtractor
 
         return $tokenBefore->id === T_DOUBLE_COLON
             || $tokenBefore->id === T_CONST;
+    }
+
+    /**
+     * Checks if the current T_CLASS, T_INTERFACE, T_TRAIT or T_ENUM token starts a class-like declaration.
+     * E.g., class Foo or new class { or new readonly class { or new #[Attr] class {
+     * The lexer emits these tokens for identifiers too, e.g., foo(class: $x) or case Interface;
+     */
+    private function isClassLikeDeclaration(): bool
+    {
+        return $this->getTokenAfter($this->pointer)->id === T_STRING
+            || $this->getTokenBefore($this->pointer - 2)->is([T_NEW, T_READONLY, ']']);
     }
 
     /**
