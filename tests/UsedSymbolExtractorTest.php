@@ -276,6 +276,11 @@ class UsedSymbolExtractorTest extends TestCase
             [],
         ];
 
+        yield 'trait use in enum and trait' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/class-like-trait-use.php',
+            [],
+        ];
+
         yield 'namespace keyword as identifier' => [
             __DIR__ . '/data/not-autoloaded/used-symbols/namespace-keyword-identifier.php',
             [
