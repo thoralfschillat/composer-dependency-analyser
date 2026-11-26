@@ -114,8 +114,10 @@ class UsedSymbolExtractor
                     break;
 
                 case T_NAMESPACE:
-                    if ($this->isNamespaceDeclaration()) {
-                        $inGlobalScope = $this->getTokenAfter($this->pointer)->text === '{'; // namespace { is the global namespace
+                    $pointerAfterKeyword = $this->getPointerAfter($this->pointer);
+
+                    if ($this->isNamespaceDeclaration($pointerAfterKeyword)) {
+                        $inGlobalScope = $tokens[$pointerAfterKeyword]->text === '{'; // namespace { is the global namespace
                         $useStatements = [];
                         $useStatementKinds = [];
                     }
@@ -369,18 +371,6 @@ class UsedSymbolExtractor
     }
 
     /**
-     * Checks if the current keyword token is used as a constant name.
-     * E.g., SomeClass::NAMESPACE (access) or public const INTERFACE = 'value' (definition)
-     */
-    private function isKeywordUsedAsConstantName(): bool
-    {
-        $tokenBefore = $this->getTokenBefore($this->pointer - 2);
-
-        return $tokenBefore->id === T_DOUBLE_COLON
-            || $tokenBefore->id === T_CONST;
-    }
-
-    /**
      * Checks if the current T_CLASS, T_INTERFACE, T_TRAIT or T_ENUM token starts a class-like declaration.
      * E.g., class Foo or new class { or new readonly class { or new #[Attr] class {
      * The lexer emits these tokens for identifiers too, e.g., foo(class: $x) or case Interface;
@@ -396,16 +386,14 @@ class UsedSymbolExtractor
      * E.g., namespace Foo; or namespace Foo { or namespace {
      * The lexer emits T_NAMESPACE for identifiers too, e.g., foo(namespace: $x) or function namespace()
      */
-    private function isNamespaceDeclaration(): bool
+    private function isNamespaceDeclaration(int $pointerAfterKeyword): bool
     {
-        if ($this->isKeywordUsedAsConstantName()) {
-            return false;
+        if ($this->getTokenBefore($this->pointer - 2)->id === T_DOUBLE_COLON) {
+            return false; // foo(SomeClass::NAMESPACE); has the shape of a declaration
         }
 
-        $pointerAfter = $this->getPointerAfter($this->pointer);
-
-        return $this->tokens[$pointerAfter]->text === '{'
-            || $this->getTokenAfter($pointerAfter + 1)->is([';', '{', T_CLOSE_TAG]);
+        return $this->tokens[$pointerAfterKeyword]->text === '{'
+            || $this->getTokenAfter($pointerAfterKeyword + 1)->is([';', '{', T_CLOSE_TAG]);
     }
 
     private function getTokenBefore(int $pointer): PhpToken
