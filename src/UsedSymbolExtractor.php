@@ -115,7 +115,7 @@ class UsedSymbolExtractor
 
                 case T_NAMESPACE:
                     if ($this->isNamespaceDeclaration()) {
-                        $inGlobalScope = false;
+                        $inGlobalScope = $this->getTokenAfter($this->pointer)->text === '{'; // namespace { is the global namespace
                         $useStatements = [];
                         $useStatementKinds = [];
                     }

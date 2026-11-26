@@ -101,6 +101,20 @@ class UsedSymbolExtractorTest extends TestCase
             ],
         ];
 
+        yield 'bracket global namespace' => [
+            __DIR__ . '/data/not-autoloaded/used-symbols/bracket-global-namespace.php',
+            [
+                SymbolKind::CLASSLIKE => [
+                    'Vendor\Package\Qualified' => [9],
+                    'UnknownGlobal' => [10],
+                    'PDO' => [11],
+                ],
+            ],
+            [
+                strtolower('PDO') => SymbolKind::CLASSLIKE,
+            ],
+        ];
+
         yield 'other symbols' => [
             __DIR__ . '/data/not-autoloaded/used-symbols/other-symbols.php',
             [
